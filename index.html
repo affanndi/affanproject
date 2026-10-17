@@ -46,7 +46,7 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--panel:#fff;--panel2:#
     </div>
     <div class="section-head"><div><h2>Popular tools</h2><p>Get started with the tools people use most.</p></div><button class="btn secondary small" onclick="showView('image')">View all tools ↗</button></div>
     <div class="tools-grid" id="popularGrid"></div>
-    <div class="bottom-grid"><div class="panel"><h3>Recent activity</h3><div class="activity"><div class="mini">▧</div><div><strong>Image resizer opened</strong><small>Just now · Browser processing</small></div><span class="status">Ready</span></div><div class="activity"><div class="mini">⌘</div><div><strong>API workspace viewed</strong><small>Today · Demo data</small></div><span class="status">Ready</span></div><div class="activity"><div class="mini">▤</div><div><strong>PDF tools explored</strong><small>Today · No files uploaded</small><span></span></div><span class="status">Ready</span></div></div><div class="panel"><h3>Your API workspace</h3><div class="api-callout"><strong>Build with the FXTools API</strong><p>Connect your app using private keys and usage quotas. Live API requires a deployed backend.</p><button class="btn small" onclick="showView('api')">Open API dashboard ↗</button></div><div class="code">GET /api/v1/tools<br>Authorization: Bearer YOUR_API_KEY</div></div></div>
+    <div class="bottom-grid"><div class="panel"><h3>Recent activity</h3><div class="activity"><div class="mini">▧</div><div><strong>Image resizer opened</strong><small>Just now · Browser processing</small></div><span class="status">Ready</span></div><div class="activity"><div class="mini">⌘</div><div><strong>API workspace viewed</strong><small>Today · Demo data</small></div><span class="status">Ready</span></div><div class="activity"><div class="mini">▤</div><div><strong>PDF tools explored</strong><small>Today · No files uploaded</small><span></span></div><span class="status">Ready</span></div></div><div class="panel"><h3>Your API workspace</h3><div class="api-callout"><strong>Build with the FXTools API</strong><p>Connect your app using private keys and usage quotas. Live API requires a deployed backend.</p><button class="btn small" onclick="showView('api')">Open API dashboard ↗</button></div><div class="code">GET /api/v1/tools<br>X-API-Key: YOUR_API_KEY</div><p class="notice">For the included backend, create a key at POST /admin/keys using X-Admin-Token. Then enter the API URL and key when opening a supported tool.</p></div></div>
   </section>
 
   <section class="view" id="view-image"><div class="section-head"><div><h2>Image tools</h2><p>Resize and convert images directly in your browser.</p></div></div><div class="tools-grid" id="imageGrid"></div></section>
@@ -63,6 +63,7 @@ html[data-theme="light"]{color-scheme:light;--bg:#f5f6fa;--panel:#fff;--panel2:#
 <canvas id="workCanvas" hidden></canvas>
 <script>
 const toolData=[
+{name:"Gemini File Analyzer",desc:"Analyze images, audio, video, and PDF files with Gemini AI.",cat:"ai",icon:"✦",tone:"purple",tag:"Gemini API",action:"gemini"},
 {name:"Image Resizer",desc:"Resize images by pixel dimensions or percentage.",cat:"image",icon:"↔",tone:"purple",tag:"Browser",action:"resize"},
 {name:"Image Compressor",desc:"Reduce file size before sharing or uploading.",cat:"image",icon:"⌁",tone:"green",tag:"Browser",action:"compress"},
 {name:"Image Converter",desc:"Convert images to PNG, JPEG, or WebP.",cat:"image",icon:"▧",tone:"blue",tag:"Browser",action:"convert"},
@@ -104,7 +105,21 @@ function openTool(name){const t=toolData.find(x=>x.name===name);if(!t)return;doc
 if(t.action==="resize"||t.action==="compress"||t.action==="convert"){body.innerHTML=`<div class="drop" id="imageDrop" onclick="document.getElementById('fileInput').click()"><div style="font-size:26px;color:var(--accent)">↑</div><strong>Choose an image file</strong><p>JPG, PNG, WebP · processed locally in this browser</p></div><div id="imageControls" style="display:none"><div class="field-row"><div class="field"><label>Width (px)</label><input id="imgWidth" type="number" min="1" max="8000" value="800"></div><div class="field"><label>Height (px)</label><input id="imgHeight" type="number" min="1" max="8000" value="600"></div></div><div class="field-row"><div class="field"><label>Output format</label><select id="imgFormat"><option value="image/webp">WebP</option><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option></select></div><div class="field"><label>Quality (JPEG/WebP)</label><input id="imgQuality" type="range" min=".3" max="1" step=".05" value=".85"></div></div><div id="imagePreview" style="margin:12px 0;text-align:center"></div><button class="btn" onclick="processImage('${t.action}')">Process & download</button></div><div class="result" id="toolResult"></div><p class="notice">Your selected image stays in this browser. Processing happens locally; files are not uploaded.</p>`;document.getElementById("fileInput").accept="image/*";document.getElementById("fileInput").onchange=loadImage;}
 else if(t.action==="url"){body.innerHTML=`<p style="color:var(--muted)">Enter a direct media URL that you own or are authorized to retrieve. This demo validates the URL format only; actual retrieval belongs on a secured backend.</p><div class="field"><label>Direct media URL</label><input id="modalUrl" type="url" placeholder="https://example.com/media.mp4"></div><button class="btn" onclick="validateModalUrl()">Validate URL</button><div class="result" id="toolResult"></div><p class="notice">Do not use this for bypassing DRM, authentication, or a platform's download restrictions.</p>`}
 else if(t.action==="api"){showView("api");return}
-else{body.innerHTML=`<div class="tool-icon ${t.tone}" style="margin:0 0 12px">${t.icon}</div><p>${t.desc}</p><div class="api-callout"><strong>Backend worker required</strong><p>This tool needs the FXTools API and processing worker. A single HTML file can provide the interface, but cannot securely host API secrets or run a persistent backend.</p></div><div class="code">POST /api/v1/${t.cat}/${t.name.toLowerCase().replaceAll(" ","-")}<br>X-API-Key: YOUR_API_KEY</div><p class="notice">Connect this UI to your deployed API to enable the operation.</p>`}
+else if(t.action==="gemini"){
+body.innerHTML=`<div class="tool-icon purple" style="margin:0 0 12px">✦</div><p>Use Gemini to summarize or inspect an image, audio, video, PDF, or text file.</p><div class="field"><label>Backend API URL</label><input id="apiBase" type="url" value="http://localhost:8000" placeholder="https://api.your-domain.com"></div><div class="field"><label>FXTools API key (not the Gemini key)</label><input id="sessionApiKey" type="password" autocomplete="off" placeholder="fx_live_..."></div><div class="field"><label>File to analyze</label><input id="apiUpload" type="file" accept="image/*,audio/*,video/*,application/pdf,text/plain" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text)"></div><div class="field"><label>Instruction for Gemini</label><input id="geminiPrompt" value="Summarize this file and identify its key details."></div><button class="btn" onclick="callGeminiTool()">Upload & analyze</button><div class="result" id="toolResult"></div><p class="notice">The Gemini secret stays on the backend. Configure GEMINI_API_KEY in backend/.env and use your FXTools API key here.</p>`;
+}
+else if(t.action==="backend"){
+const endpoint = t.name==="Merge PDF" ? "/api/v1/pdf/merge" :
+(t.name==="Media Metadata" ? "/api/v1/media/metadata" :
+(t.cat==="media" ? "/api/v1/media/convert" : ""));
+body.innerHTML=`<div class="tool-icon ${t.tone}" style="margin:0 0 12px">${t.icon}</div><p>${t.desc}</p>
+<div class="api-callout"><strong>Connect to your FXTools backend</strong><p>Enter your deployed API URL and API key for this session. They are not written into this HTML file or saved by this page.</p></div>
+<div class="field"><label>Backend API URL</label><input id="apiBase" type="url" placeholder="https://api.your-domain.com" value="http://localhost:8000"></div>
+<div class="field"><label>FXTools API key</label><input id="sessionApiKey" type="password" autocomplete="off" placeholder="fx_live_..."></div>
+<div class="field"><label>Choose file${t.name==="Merge PDF"?"s (select at least 2 PDFs)":""}</label><input id="apiUpload" type="file" ${t.name==="Merge PDF"?"multiple accept='.pdf,application/pdf'":""} style="width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text)"></div>
+${t.cat==="media" && t.name!=="Media Metadata"?`<div class="field"><label>Output format</label><select id="mediaOutput"><option>mp4</option><option>webm</option><option>mp3</option><option>wav</option><option>m4a</option><option>ogg</option></select></div>`:""}
+<button class="btn" onclick="callBackendTool('${t.name}','${endpoint}')">Upload & process</button>
+<div class="result" id="toolResult"></div><p class="notice">This form sends the selected file to the backend you specify. Use HTTPS in production. Your API key is sent in the request header and is not stored by this page.</p>`}
 modal.classList.add("open")}
 function closeModal(){modal.classList.remove("open")}
 modal.addEventListener("click",e=>{if(e.target===modal)closeModal()});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
@@ -113,6 +128,65 @@ function loadImage(e){const file=e.target.files&&e.target.files[0];if(!file)retu
 function processImage(action){if(!selectedImage)return;let w=Math.max(1,Math.min(8000,Number(document.getElementById("imgWidth").value)||800)),h=Math.max(1,Math.min(8000,Number(document.getElementById("imgHeight").value)||600));if(action==="compress"){w=Math.min(w,selectedImage.naturalWidth);h=Math.min(h,selectedImage.naturalHeight)}const c=document.getElementById("workCanvas");c.width=w;c.height=h;c.getContext("2d").drawImage(selectedImage,0,0,w,h);const type=document.getElementById("imgFormat").value,q=Number(document.getElementById("imgQuality").value);c.toBlob(blob=>{if(!blob){alert("Could not process this image.");return}const a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download="fxtools-output."+({"image/webp":"webp","image/jpeg":"jpg","image/png":"png"}[type]);a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);const r=document.getElementById("toolResult");r.classList.add("show");r.innerHTML=`<strong style="color:var(--mint)">✓ Image processed</strong><br>Output: ${w} × ${h}px · ${(blob.size/1024).toFixed(1)} KB`;document.getElementById("processedCount").textContent=Number(document.getElementById("processedCount").textContent)+1;},type,q)}
 function validateModalUrl(){const input=document.getElementById("modalUrl"),r=document.getElementById("toolResult");r.classList.add("show");try{const u=new URL(input.value);if(!["http:","https:"].includes(u.protocol))throw Error();r.textContent="URL format looks valid. No request was made; connect a secured backend to retrieve the file."}catch(e){r.textContent="Enter a valid http or https URL."}}
 function checkMediaUrl(){const v=document.getElementById("mediaUrl").value,r=document.getElementById("urlResult");r.classList.add("show");try{const u=new URL(v);if(!["http:","https:"].includes(u.protocol))throw Error();r.textContent="URL format looks valid. This frontend has not fetched the URL. A production backend must block private IP ranges and validate redirects to prevent SSRF."}catch(e){r.textContent="Enter a valid http or https URL."}}
+
+
+async function callGeminiTool(){
+  const result=document.getElementById("toolResult");
+  const base=(document.getElementById("apiBase")?.value||"").trim().replace(/\/+$/,"");
+  const apiKey=(document.getElementById("sessionApiKey")?.value||"").trim();
+  const file=document.getElementById("apiUpload")?.files?.[0];
+  const prompt=document.getElementById("geminiPrompt")?.value||"Summarize this file.";
+  if(!base||!apiKey||!file){result.classList.add("show");result.textContent="Enter backend URL, FXTools API key, and choose a file.";return}
+  const form=new FormData();form.append("file",file);form.append("prompt",prompt);
+  result.classList.add("show");result.textContent="Uploading file to FXTools, then asking Gemini to analyze it…";
+  try{
+    const response=await fetch(base+"/api/v1/ai/analyze-file",{method:"POST",headers:{"X-API-Key":apiKey},body:form});
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.detail||"Request failed ("+response.status+")");
+    result.textContent=data.analysis||"Gemini returned no analysis.";
+    document.getElementById("processedCount").textContent=Number(document.getElementById("processedCount").textContent)+1;
+  }catch(err){result.textContent="Analysis failed: "+err.message+" Check backend, FXTools API key, Gemini configuration, CORS, and quotas."}
+}
+async function callBackendTool(name, endpoint){
+  const result=document.getElementById("toolResult");
+  const base=(document.getElementById("apiBase")?.value||"").trim().replace(/\/+$/,"");
+  const apiKey=(document.getElementById("sessionApiKey")?.value||"").trim();
+  const picker=document.getElementById("apiUpload");
+  if(!base){result.classList.add("show");result.textContent="Enter your backend URL.";return}
+  if(!apiKey){result.classList.add("show");result.textContent="Enter your FXTools API key. The frontend cannot create a working key by itself.";return}
+  if(!picker || !picker.files || !picker.files.length){result.classList.add("show");result.textContent="Choose a file first.";return}
+  if(!endpoint){result.classList.add("show");result.textContent="This tool's endpoint is not implemented in the current backend yet.";return}
+  const form=new FormData();
+  if(name==="Merge PDF"){
+    if(picker.files.length<2){result.classList.add("show");result.textContent="Select at least two PDF files.";return}
+    for(const f of picker.files) form.append("files",f);
+  } else {
+    form.append("file",picker.files[0]);
+    if(endpoint==="/api/v1/media/convert"){
+      form.append("output",document.getElementById("mediaOutput")?.value||"mp4");
+    }
+  }
+  result.classList.add("show");result.textContent="Uploading and processing…";
+  try{
+    const response=await fetch(base+endpoint,{method:"POST",headers:{"X-API-Key":apiKey},body:form});
+    if(!response.ok){
+      let msg="Request failed ("+response.status+").";
+      try{const data=await response.json();msg=data.detail||msg}catch(e){}
+      throw new Error(msg);
+    }
+    const blob=await response.blob();
+    const disposition=response.headers.get("Content-Disposition")||"";
+    const match=disposition.match(/filename="?([^";]+)"?/i);
+    const filename=match?match[1]:(name==="Merge PDF"?"fxtools-merged.pdf":"fxtools-output");
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    result.innerHTML='<strong style="color:var(--mint)">✓ Complete — download started.</strong>';
+    document.getElementById("processedCount").textContent=Number(document.getElementById("processedCount").textContent)+1;
+  }catch(err){
+    result.textContent="Could not process file: "+err.message+" Check backend URL, API key, CORS, and that the backend is running.";
+  }
+}
 function generateDemoKey(){document.getElementById("apiKey").value="fx_demo_"+Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b=>b.toString(16).padStart(2,"0")).join("");}
 </script>
 </body>
